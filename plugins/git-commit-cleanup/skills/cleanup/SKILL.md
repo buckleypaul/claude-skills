@@ -303,6 +303,9 @@ git commit -s -m "feat(auth): add User model with validation
 **Commit Signing:**
 All commits use the `-s` flag to add a `Signed-off-by` trailer with the user's configured name and email. This provides clear attribution and is required by many projects (e.g., Linux kernel, CNCF projects).
 
+**Important: No AI Co-Author Attribution**
+Do NOT add Claude Code or any AI assistant as a co-author to commits created by this skill. The commits should be attributed solely to the user. The purpose of this skill is to clean up the user's work, not to claim co-authorship.
+
 **Progress Tracking:**
 For branches with many commits, report progress during implementation:
 ```

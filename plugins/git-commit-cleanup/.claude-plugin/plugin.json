@@ -1,0 +1,5 @@
+{
+  "name": "git-commit-cleanup",
+  "description": "Clean up messy commit histories by creating a new branch with logical, small, and easily reviewable commits that lead to the same end state",
+  "version": "1.0.0"
+}

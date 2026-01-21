@@ -1,0 +1,17 @@
+{
+  "name": "buckleypaul-claude-skills",
+  "version": "1.0.0",
+  "description": " suite of miscellaneous skills for work and life",
+  "owner": {
+    "name": "Paul Buckley",
+    "email": "paul@hubble.com"
+  },
+  "plugins": [
+    {
+      "name": "git-commit-cleanup",
+      "description": "Clean up messy commit histories by creating a new branch with logical, small, and easily reviewable commits that lead to the same end state.",
+      "source": "./plugins/git-commit-cleanup",
+      "category": "development"
+    }
+  ]
+}
