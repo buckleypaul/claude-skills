@@ -1,0 +1,16 @@
+{
+  "name": "claude-skills",
+  "displayName": "Paul's Claude Skills",
+  "description": "A suite of miscellaneous skills for work and life",
+  "version": "1.0.0",
+  "author": "Paul Buckley",
+  "repository": "https://github.com/buckleypaul/claude-skills",
+  "skills": [
+    {
+      "name": "git-commit-cleanup",
+      "path": "git-commit-cleanup/SKILL.md",
+      "description": "Clean up messy commit histories by creating a new branch with logical, small, and easily reviewable commits that lead to the same end state.",
+      "invocation": "/git-commit-cleanup"
+    }
+  ]
+}
