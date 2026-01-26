@@ -1,0 +1,5 @@
+{
+  "name": "standup",
+  "description": "Generate daily standup reports by aggregating activity from Slack, Jira, Confluence, GitHub, and Gmail",
+  "version": "1.0.0"
+}
