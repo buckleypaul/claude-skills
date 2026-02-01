@@ -36,6 +36,12 @@
       "description": "Create well-structured git commits with signing, smart branching, and commit splitting",
       "source": "./plugins/hubble-commit",
       "category": "development"
+    },
+    {
+      "name": "pip-release",
+      "description": "Package Python libraries and release to PyPI with versioning and changelog",
+      "source": "./plugins/pip-release",
+      "category": "development"
     }
   ]
 }
