@@ -5,6 +5,8 @@ description: Test and provision Hubble Network devices using the pyhubblenetwork
 
 # Hubble Network Device Testing Skill
 
+**SDK Version:** 0.1.0
+
 ## Purpose & When to Use
 
 Use this skill when you need to:
@@ -141,12 +143,18 @@ hubblenetwork ble scan --timeout 60 --format json
 hubblenetwork ble scan --key "${DEVICE_KEY}" --timeout 60 --count 5 --format json
 ```
 
+**With ingestion to backend:**
+```bash
+hubblenetwork ble scan --key "${DEVICE_KEY}" --ingest --timeout 60
+```
+
 **Options:**
 - `--timeout`: Scan duration in seconds
 - `--count`: Stop after N packets (optional)
 - `--key`: Device key for decryption (optional)
 - `--days`: Days to check back for time counter (default: 2)
 - `--format`: Output format (tabular or json)
+- `--ingest`: Ingest packets to backend (requires key)
 
 ### Device Time Check
 
@@ -241,6 +249,41 @@ For complete validation, perform provisioning followed by BLE verification:
 4. Run `hubblenetwork ble detect --key "${KEY}" --timeout 30 --format json`
 5. Verify success
 
+### Organization Commands
+
+**Get organization info:**
+```bash
+hubblenetwork org info
+```
+
+**List all devices:**
+```bash
+hubblenetwork org list-devices
+```
+
+**Register a new device:**
+```bash
+hubblenetwork org register-device
+hubblenetwork org register-device --encryption AES-128-CTR
+```
+
+Encryption options: `AES-256-CTR` (default), `AES-128-CTR`
+
+**Set device name:**
+```bash
+hubblenetwork org set-device-name DEVICE_ID "My Device Name"
+```
+
+**Get packets from a device:**
+```bash
+hubblenetwork org get-packets DEVICE_ID
+hubblenetwork org get-packets DEVICE_ID --format json --days 30
+```
+
+**Options:**
+- `--format`: Output format (tabular, csv, json)
+- `--days`: Number of days to query back (default: 7)
+
 ## Phase 5: Verification Criteria
 
 ### BLE Packet Detection
@@ -313,6 +356,39 @@ Generate a test report summarizing results.
 | `output_format` | "json" | Output format: json or tabular |
 | `verification_delay` | 15 | Seconds to wait before verification after provisioning |
 
+## SDK Architecture
+
+The pyhubblenetwork SDK uses a src layout with the main package at `src/hubblenetwork/`. Import from the package top-level:
+
+```python
+from hubblenetwork import (
+    ble, cloud,
+    Organization, Device, Credentials, Environment,
+    EncryptedPacket, DecryptedPacket, Location,
+    decrypt, InvalidCredentialsError,
+)
+```
+
+### Core Modules
+
+| Module | Purpose |
+|--------|---------|
+| `org.py` | `Organization` class: credential-scoped operations (register devices, retrieve packets, list devices) |
+| `cloud.py` | Low-level HTTP client for Hubble Cloud API. Contains `Credentials`, `Environment` dataclasses |
+| `ble.py` | BLE scanning for beacon packets (UUID 0xFCA6). Provides sync (`scan()`) and async (`scan_async()`) variants |
+| `ready.py` | Hubble Ready device provisioning (UUID 0xFCA7). Handles GATT connections and provisioning flow |
+| `crypto.py` | Local packet decryption. AES-CTR with CMAC-based key derivation (SP800_108_Counter KDF) |
+| `packets.py` | Data classes: `Location`, `EncryptedPacket`, `DecryptedPacket` |
+| `device.py` | `Device` dataclass representing a registered device |
+| `errors.py` | Exception hierarchy. Base `HubbleError` with specialized errors |
+
+### Key Patterns
+
+- **Sync/Async duality**: BLE and provisioning functions have both sync and async variants
+- **Environment auto-detection**: `get_env_from_credentials()` tries PROD then TESTING
+- **Pagination**: Cloud API uses continuation tokens, handled internally by `Organization` methods
+- **Encryption modes**: Devices support AES-256-CTR (32-byte key) or AES-128-CTR (16-byte key)
+
 ## Error Handling
 
 | Error | Cause | Recovery |
@@ -333,19 +409,30 @@ Generate a test report summarizing results.
 
 ```
 hubblenetwork --help
+hubblenetwork --version
+
+# BLE Commands
 hubblenetwork ble --help
 hubblenetwork ble detect --help
 hubblenetwork ble scan --help
 hubblenetwork ble check-time --help
+
+# Ready Device Commands
 hubblenetwork ready --help
 hubblenetwork ready scan --help
 hubblenetwork ready info --help
 hubblenetwork ready provision --help
-hubblenetwork validate-credentials --help
+
+# Organization Commands
 hubblenetwork org --help
 hubblenetwork org info
 hubblenetwork org list-devices
-hubblenetwork org get-packets DEVICE_ID
+hubblenetwork org register-device [--encryption AES-256-CTR|AES-128-CTR]
+hubblenetwork org set-device-name DEVICE_ID NAME
+hubblenetwork org get-packets DEVICE_ID [--format tabular|csv|json] [--days N]
+
+# Credential Validation
+hubblenetwork validate-credentials [--org-id ORG] [--token TOKEN]
 ```
 
 ## Success Criteria
@@ -358,3 +445,48 @@ A successful test session includes:
 4. **Time In Spec**: Device time within +/- 2 days (if checked)
 5. **Provisioning Complete**: All characteristics written (if provisioning)
 6. **Report Generated**: Summary of all test results
+
+## Python API Quick Start
+
+### Scan and ingest packets
+
+```python
+from hubblenetwork import ble, Organization
+
+org = Organization(org_id="org_123", api_token="sk_XXX")
+pkts = ble.scan(timeout=5.0)
+if len(pkts) > 0:
+    org.ingest_packet(pkts[0])
+```
+
+### Manage devices
+
+```python
+from hubblenetwork import Organization
+
+org = Organization(org_id="org_123", api_token="sk_XXX")
+
+# Create a new device
+new_dev = org.register_device()
+print("new device id:", new_dev.id)
+
+# List devices
+for d in org.list_devices():
+    print(d.id, d.name)
+
+# Get packets from a device
+packets = org.retrieve_packets(new_dev)
+```
+
+### Local decryption
+
+```python
+from hubblenetwork import Device, ble, decrypt
+
+dev = Device(id="dev_abc", key=b"<secret-key>")
+pkts = ble.scan(timeout=5.0)
+for pkt in pkts:
+    decrypted = decrypt(dev.key, pkt)
+    if decrypted:
+        print("payload:", decrypted.payload)
+```
