@@ -1,0 +1,5 @@
+{
+  "name": "serial-console-skill",
+  "description": "Test firmware connected over serial consoles with automated expect scripts, supporting boot sequence verification, command shell interaction, and AT commands",
+  "version": "1.0.0"
+}

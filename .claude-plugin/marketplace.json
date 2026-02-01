@@ -18,6 +18,12 @@
       "description": "Generate daily standup reports by aggregating activity from Slack, Jira, Confluence, GitHub, and Gmail",
       "source": "./plugins/standup",
       "category": "productivity"
+    },
+    {
+      "name": "serial-console-skill",
+      "description": "Test firmware connected over serial consoles with automated expect scripts",
+      "source": "./plugins/serial-console-skill",
+      "category": "development"
     }
   ]
 }
