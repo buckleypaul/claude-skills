@@ -21,6 +21,63 @@ Package Python libraries for PyPI distribution with automated versioning, change
 
 Execute these phases in order:
 
+### Phase 0: Virtual Environment Setup
+
+Before running any Python commands, set up a virtual environment:
+
+```bash
+# Check for existing virtual environment directories
+VENV_DIR=""
+for dir in .venv venv env .env; do
+    if [[ -d "$dir" && -f "$dir/bin/activate" ]]; then
+        VENV_DIR="$dir"
+        break
+    fi
+done
+
+if [[ -n "$VENV_DIR" ]]; then
+    echo "Found existing virtual environment: $VENV_DIR"
+    source "$VENV_DIR/bin/activate"
+else
+    echo "No virtual environment found. Creating new one..."
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+    # Install required packaging tools
+    pip install --upgrade pip
+    pip install build twine
+fi
+
+# Verify we're in a virtual environment
+if [[ -z "$VIRTUAL_ENV" ]]; then
+    echo "WARNING: Not in a virtual environment!"
+fi
+```
+
+**Display to user:**
+```
+Virtual Environment Status:
+- Using: {VENV_DIR or ".venv (newly created)"}
+- Python: $(which python3)
+- Active: {VIRTUAL_ENV is set ? "yes" : "no"}
+```
+
+**If creating new venv:**
+```
+Created new virtual environment at .venv
+
+Installed packages:
+- pip (upgraded)
+- build
+- twine
+
+Continue with release?
+[Y] Yes, continue
+[N] No, exit and configure venv manually
+```
+
+---
+
 ### Phase 1: Project Discovery & Validation
 
 Validate the project structure and gather information:
@@ -369,7 +426,7 @@ This will:
 6. Build distribution packages
 7. Upload to TestPyPI (required verification)
 8. Upload to production PyPI
-9. Push to remote and optionally create git tag
+9. Push to remote and create git tag v{NEW_VERSION}
 
 Proceed with release?
 [Y] Yes, start the release process
@@ -717,35 +774,32 @@ pip install {PROJECT_NAME}=={NEW_VERSION}
 
 ---
 
-### Phase 13: Push to Remote
+### Phase 13: Push to Remote and Tag
 
-Push the release commit and optionally create a git tag:
+Push the release commit and create a git tag matching the release version:
 
 ```bash
 # Get current branch and remote
 REMOTE=$(git remote | head -1)
 BRANCH=$(git branch --show-current)
 
-# Push release commit
-git push $REMOTE $BRANCH
-```
-
-**Ask about git tag:**
-```
-Create Git Tag?
-
-A git tag helps mark release points in the repository.
-
-Options:
-[Y] Yes, create tag v{NEW_VERSION} and push
-[N] No, just push the commit
-```
-
-If user selects yes:
-```bash
-# Create and push tag
+# Create annotated tag for the release
 git tag -a "v{NEW_VERSION}" -m "Release v{NEW_VERSION}"
+
+# Push release commit and tag
+git push $REMOTE $BRANCH
 git push $REMOTE "v{NEW_VERSION}"
+```
+
+**Display push result:**
+```
+Pushed to Remote
+
+Branch: {BRANCH}
+Tag: v{NEW_VERSION}
+Remote: {REMOTE}
+
+Commit and tag have been pushed successfully.
 ```
 
 ---
@@ -764,7 +818,7 @@ Release Artifacts:
 - PyPI: https://pypi.org/project/{PROJECT_NAME}/{NEW_VERSION}/
 - TestPyPI: https://test.pypi.org/project/{PROJECT_NAME}/{NEW_VERSION}/
 - Git commit: {COMMIT_SHA}
-- Git tag: v{NEW_VERSION} (if created)
+- Git tag: v{NEW_VERSION}
 
 Install command:
 pip install {PROJECT_NAME}=={NEW_VERSION}
@@ -842,4 +896,4 @@ Before completing release:
 - [ ] User verified TestPyPI package works
 - [ ] Production PyPI upload successful
 - [ ] Git commit pushed
-- [ ] Git tag created (optional)
+- [ ] Git tag created (v{NEW_VERSION})
