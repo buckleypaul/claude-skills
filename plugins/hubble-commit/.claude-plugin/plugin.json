@@ -1,5 +1,5 @@
 {
   "name": "hubble-commit",
-  "description": "Create well-structured git commits with signing, smart branching, and commit splitting",
+  "description": "Create well-structured git commits with signing, smart branching, commit splitting, and build artifact detection",
   "version": "1.0.0"
 }
