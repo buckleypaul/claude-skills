@@ -30,6 +30,12 @@
       "description": "Test and provision Hubble Network devices using the pyhubblenetwork SDK",
       "source": "./plugins/pyhubblenetwork",
       "category": "development"
+    },
+    {
+      "name": "hubble-commit",
+      "description": "Create well-structured git commits with signing, smart branching, and commit splitting",
+      "source": "./plugins/hubble-commit",
+      "category": "development"
     }
   ]
 }
