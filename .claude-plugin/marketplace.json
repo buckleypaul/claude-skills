@@ -24,6 +24,12 @@
       "description": "Test firmware connected over serial consoles with automated expect scripts",
       "source": "./plugins/serial-console-skill",
       "category": "development"
+    },
+    {
+      "name": "pyhubblenetwork",
+      "description": "Test and provision Hubble Network devices using the pyhubblenetwork SDK",
+      "source": "./plugins/pyhubblenetwork",
+      "category": "development"
     }
   ]
 }

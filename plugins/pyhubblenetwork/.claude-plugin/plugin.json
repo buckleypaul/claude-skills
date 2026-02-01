@@ -1,0 +1,5 @@
+{
+  "name": "pyhubblenetwork",
+  "description": "Hubble Network device testing and provisioning using the pyhubblenetwork SDK",
+  "version": "1.0.0"
+}
