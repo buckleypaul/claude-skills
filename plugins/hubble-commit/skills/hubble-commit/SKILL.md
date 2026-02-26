@@ -1,6 +1,6 @@
 ---
 name: hubble-commit
-description: Create well-structured git commits with smart file staging, artifact detection, signing, and commit splitting
+description: Create well-structured git commits with smart file staging, artifact detection, signing, and commit splitting. Supports --single flag to stage all changes and create one commit without splitting.
 ---
 
 # Hubble Commit Skill
@@ -14,6 +14,21 @@ Create well-structured, signed git commits with intelligent file staging, build 
 3. **Focus on WHY** - Commit messages explain why, not what (the diff shows what)
 4. **Less detail is better** - Concise messages are more valuable than verbose ones
 5. **Small commits** - Prefer multiple focused commits over large omnibus commits
+
+---
+
+## Invocation
+
+```bash
+/hubble-commit            # Full workflow (interactive staging, splitting analysis)
+/hubble-commit --single   # Single-commit mode: stage all tracked changes, skip splitting
+```
+
+**`--single` mode behavior:**
+- Auto-stages all unstaged tracked changes (`git add -u`) without prompting
+- Still prompts for untracked files (you decide what new files to include)
+- Skips Phase 5 (commit splitting analysis) entirely
+- All other phases (branch decision, amend check, type, message) run normally
 
 ---
 
@@ -88,6 +103,12 @@ HAS_CONFLICTS=$([[ -n "$CONFLICT_FILES" ]] && echo "true" || echo "false")
 
 # Check for submodule changes
 SUBMODULE_CHANGES=$(git diff --cached --submodule=short 2>/dev/null | grep -c "^Submodule" || echo 0)
+
+# Detect single-commit mode
+SINGLE_COMMIT_MODE="false"
+if echo "$SKILL_ARGS" | grep -q -- "--single"; then
+    SINGLE_COMMIT_MODE="true"
+fi
 ```
 
 **Display to user:**
@@ -99,6 +120,7 @@ Repository State:
 - Untracked: {UNTRACKED_COUNT} files
 - Last commit: {LAST_COMMIT_MSG} {LAST_COMMIT_PUSHED ? "(pushed)" : "(not pushed)"}
 {SUBMODULE_CHANGES > 0 ? "- Submodule changes: " + SUBMODULE_CHANGES : ""}
+{SINGLE_COMMIT_MODE == "true" ? "- Mode: single commit (--single)" : ""}
 ```
 
 **Early exit conditions:**
@@ -240,7 +262,13 @@ Options:
 
 #### Step 2d: Handle Unstaged Changes
 
-**If unstaged changes exist in tracked files**, use AskUserQuestion:
+**If `SINGLE_COMMIT_MODE == true` AND unstaged tracked changes exist:**
+- Automatically run `git add -u` to stage all tracked modifications
+- Display: "Single-commit mode: staged all tracked changes (git add -u)"
+- Skip the [A]/[S]/[N] prompt for tracked files
+- Continue to Step 2e (final staging check)
+
+**Otherwise, if unstaged changes exist in tracked files**, use AskUserQuestion:
 
 ```
 Unstaged Changes
@@ -360,10 +388,12 @@ git switch -c {selected_branch_name} 2>/dev/null || git checkout -b {selected_br
 
 ### Phase 5: Commit Splitting Analysis
 
-**Trigger:** Large commits meeting ANY of:
+**Trigger:** `SINGLE_COMMIT_MODE == false` AND large commits meeting ANY of:
 - `LINES_CHANGED > 200`
 - `STAGED_COUNT > 5`
 - Multiple distinct areas detected
+
+**Skip entirely when `SINGLE_COMMIT_MODE == true`.**
 
 Analyze staged files for logical groupings:
 - **Test files:** `*_test.*, *_spec.*, test_*, spec_*, tests/*, __tests__/*`
