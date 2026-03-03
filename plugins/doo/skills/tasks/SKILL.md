@@ -1,7 +1,7 @@
 ---
-name: doo:tasks
-description: Use ONLY when the user explicitly asks to read, create, or manage items
-  in their personal doo task list. NOT for tracking AI work or session progress.
+name: doo
+description: Read and manage items in the user's personal doo task list. Use when
+  the user asks about their tasks, todos, or wants to add/complete/edit items in doo.
 ---
 
 # Doo Task Management
@@ -38,7 +38,7 @@ doo task show <ID> --json                     # single task detail
     "priority": 0,
     "tags": ["string"],
     "dueDate": "2026-03-10",
-    "status": "untriaged",
+    "status": "triage",
     "description": "string or null",
     "notes": "string or null",
     "subtasks": [{"id": "uuid", "title": "string", "completed": false}]
@@ -48,7 +48,7 @@ doo task show <ID> --json                     # single task detail
 
 - `priority`: 0 = highest, 1 = medium, 2 = lowest (default)
 - `dueDate`: `yyyy-MM-dd` string or `null`
-- `status`: `untriaged` | `backlog` | `in_progress` | `in_review`
+- `status`: `triage` | `backlog` | `in_progress` | `in_review`
 
 ## Proposing Tasks (before writing)
 
@@ -77,7 +77,7 @@ doo task edit <ID> --priority 1 --tag new --remove-tag old --due tomorrow --stat
 doo task delete <ID>
 
 # Move pipeline status
-doo task move <ID> backlog        # untriaged | backlog | inprogress | inreview
+doo task move <ID> backlog        # triage | backlog | inprogress | inreview
 
 # Subtasks
 doo task subtask add <taskID> "subtask title"
@@ -94,7 +94,7 @@ title text [!0-2] [#tag …] [@today|tomorrow|yyyy-MM-dd] [%status] [/descriptio
 - `!0` = highest priority, `!1` = medium, `!2` = lowest (default, can omit)
 - `#tag` — one or more tags (repeat for multiple)
 - `@today`, `@tomorrow`, `@yyyy-MM-dd` — due date
-- `%untriaged`, `%backlog`, `%inprogress`, `%inreview` (also accepts hyphens/underscores)
+- `%triage`, `%backlog`, `%inprogress`, `%inreview` (also accepts hyphens/underscores)
 - `/description text` — freeform description, must come last
 
 Example: `Fix login bug !1 #backend @tomorrow %backlog /check token expiry`

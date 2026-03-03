@@ -14,9 +14,9 @@
       "category": "development"
     },
     {
-      "name": "standup",
-      "description": "Generate daily standup reports by aggregating activity from Slack, Jira, Confluence, GitHub, and Gmail",
-      "source": "./plugins/standup",
+      "name": "doo",
+      "description": "Manage personal task lists with support for priorities, tags, due dates, and status tracking",
+      "source": "./plugins/doo",
       "category": "productivity"
     },
     {
